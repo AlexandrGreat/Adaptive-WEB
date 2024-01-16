@@ -17,15 +17,26 @@ void main()
 
 void action1() 
 {
+    string a, text;
+    int a1;
     Console.WriteLine("ACTION 1");
     Console.WriteLine("-------------------");
     string fileName = "action1text.txt";
-    if (File.Exists(fileName))
+    Console.WriteLine("Input words count");
+    a = Console.ReadLine();
+    if (File.Exists(fileName) && int.TryParse(a, out a1))
     {
-        Console.WriteLine("Symbols in " + fileName + ": " + File.ReadAllText(fileName).Length);
+        text = File.ReadAllText(fileName);
+        int word = 1;
+        foreach (char c in text)
+        {
+            if (c == ' ') { word += 1; }
+            if (word <= a1) { Console.Write(c); }
+        }
+        Console.WriteLine();
     }
     else
-        Console.WriteLine("Error while opening file");
+        Console.WriteLine("Error");
     Console.WriteLine("-------------------");
     Console.WriteLine("Press any key to return to main menu");
     Console.ReadKey();
