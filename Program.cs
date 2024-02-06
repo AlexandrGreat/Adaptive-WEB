@@ -1,81 +1,41 @@
-using System;
+using System.Reflection;
 
-main();
+ReflectionDemonstrator rd = new ReflectionDemonstrator();
 
-void main() 
+//Type + TypeInfo
+Type type = typeof(ReflectionDemonstrator);
+TypeInfo ti = type.GetTypeInfo();
+Console.WriteLine("IsValueType:" + type.IsValueType + "\nIsArray:" + type.IsArray + "\nIsClass:" + type.IsClass + "\n");
+Console.WriteLine("FullName:"+ti.FullName+"\nName:"+ti.Name+"\nNamespace:"+ti.Namespace+"\nModule"+ti.Module+"\n");
+
+//MemberInfo
+MemberInfo [] mi=type.GetMembers();
+Console.WriteLine("\nLength:" + mi.Length + "\nLongLength:" + mi.LongLength + "\n");
+foreach (MemberInfo m in mi) Console.WriteLine(m.Name);
+
+//FieldInfo
+FieldInfo[] fi = type.GetFields();
+Console.WriteLine("\nLength:" + fi.Length + "\nLongLength:" + fi.LongLength + "\n");
+foreach (FieldInfo f in fi) Console.WriteLine(f.Name);
+
+//MethodInfo
+MethodInfo[] mei=type.GetMethods();
+Console.WriteLine("\nLength:" + mei.Length + "\nLongLength:" + mei.LongLength + "\n");
+foreach (MethodInfo m in mei) Console.WriteLine(m.Name);
+
+//Calling metod with reflection
+MethodInfo method = type.GetMethod("Hello");
+method.Invoke(rd, null);
+
+class ReflectionDemonstrator
 {
-    Console.WriteLine("Please, select an action");
-    Console.WriteLine("-------------------");
-    Console.WriteLine("1: Count symbols in file");
-    Console.WriteLine("2: Do some math");
-    Console.WriteLine("-------------------");
-    ConsoleKeyInfo input;
-    input = Console.ReadKey(true);
-    if (input.Key == ConsoleKey.D1) { Console.Clear(); action1(); }
-    if (input.Key == ConsoleKey.D2) { Console.Clear(); action2(); }
-}
+    public int intField;
+    private float floatField;
+    protected string stringField;
+    internal double doubleField;
+    public bool boolField;
 
-void action1() 
-{
-    string a, text;
-    int a1;
-    Console.WriteLine("ACTION 1");
-    Console.WriteLine("-------------------");
-    string fileName = "action1text.txt";
-    Console.WriteLine("Input words count");
-    a = Console.ReadLine();
-    if (File.Exists(fileName) && int.TryParse(a, out a1))
-    {
-        text = File.ReadAllText(fileName);
-        int word = 1;
-        foreach (char c in text)
-        {
-            if (c == ' ') { word += 1; }
-            if (word <= a1) { Console.Write(c); }
-        }
-        Console.WriteLine();
-    }
-    else
-        Console.WriteLine("Error");
-    Console.WriteLine("-------------------");
-    Console.WriteLine("Press any key to return to main menu");
-    Console.ReadKey();
-    Console.Clear();
-    main();
-}
-
-void action2() 
-{
-    string a, b;
-    double a1, b1;
-    Console.WriteLine("ACTION 2");
-    Console.WriteLine("-------------------");
-    Console.WriteLine("Input 2 numbers:");
-    a = Console.ReadLine();
-    b = Console.ReadLine();
-    if (double.TryParse(a, out a1) && double.TryParse(b, out b1)) 
-    {
-        Console.WriteLine("Please, select an action");
-        Console.WriteLine("-------------------");
-        Console.WriteLine("1: +");
-        Console.WriteLine("2: -");
-        Console.WriteLine("3: *");
-        Console.WriteLine("4: /");
-        Console.WriteLine("-------------------");
-        ConsoleKeyInfo input;
-        input = Console.ReadKey(true);
-        if (input.Key == ConsoleKey.D1) { Console.WriteLine(a1 + " + " + b1 + " = " + (a1 + b1)); }
-        if (input.Key == ConsoleKey.D2) { Console.WriteLine(a1 + " - " + b1 + " = " + (a1 - b1)); }
-        if (input.Key == ConsoleKey.D3) { Console.WriteLine(a1 + " * " + b1 + " = " + (a1 * b1)); }
-        if (input.Key == ConsoleKey.D4) { Console.WriteLine(a1 + " / " + b1 + " = " + (a1 / b1)); }
-    }
-    else
-    {
-        Console.WriteLine("Cant parse to double");
-    }
-    Console.WriteLine("-------------------");
-    Console.WriteLine("Press any key to return to main menu");
-    Console.ReadKey();
-    Console.Clear();
-    main();
+    public void Hello() { Console.WriteLine("HELLO WORLD!!!"); }
+    public float Add() { return (intField + floatField); }
+    public string GetStringField() { return stringField; }
 }
