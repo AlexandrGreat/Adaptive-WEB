@@ -7,9 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddTransient<UserRepository>(); //Used AddTransient
-builder.Services.AddTransient<ProductRepository>();
-builder.Services.AddTransient<ReviewRepository>();
+builder.Services.AddSingleton<UserRepository>(); //Used AddSingleton to imitate work with DB: every request used the same object
+builder.Services.AddSingleton<ProductRepository>();
+builder.Services.AddSingleton<ReviewRepository>();
 
 builder.Services.AddControllers();
 var app = builder.Build();
