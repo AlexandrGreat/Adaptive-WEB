@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using LR6.Models;
 using LR6.Services;
 using LR6.Interfaces;
@@ -18,31 +18,31 @@ namespace LR6.Controllers
             _productRepository = productRepository;
         }
 
-        [HttpGet("GetProducts")]
+        [HttpGet]
         public Task<Product[]> GetProducts()
         {
             return _productRepository.GetAllProducts();
         }
 
-        [HttpGet("GetProduct")]
+        [HttpGet("{id}")]
         public Task<Product> GetProduct(int id)
         {
             return _productRepository.GetProduct(id);
         }
 
-        [HttpPost("AddProduct")]
+        [HttpPost]
         public Task<Product[]> AddProduct(Product product)
         {
             return _productRepository.AddProduct(product);
         }
 
-        [HttpPut("PutProduct")]
+        [HttpPut("{id}")]
         public Task<Product[]> PutProduct(Product product, int id)
         {
             return _productRepository.PutProduct(product, id);
         }
 
-        [HttpDelete("DeleteProduct")]
+        [HttpDelete("{id}")]
         public Task<Product[]> DeleteProduct(int id)
         {
             return _productRepository.DeleteProduct(id);
