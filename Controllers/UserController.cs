@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using LR6.Models;
 using LR6.Services;
 
@@ -17,31 +17,31 @@ namespace LR6.Controllers
             _userRepository = userRepository;
         }
 
-        [HttpGet("GetUsers")]
+        [HttpGet]
         public Task<User[]> GetUsers()
         {
             return _userRepository.GetAllUsers();
         }
 
-        [HttpGet("GetUser")]
+        [HttpGet("{id}")]
         public Task<User> GetUser(int id)
         {
             return _userRepository.GetUser(id);
         }
 
-        [HttpPost("AddUser")]
+        [HttpPost]
         public Task<User[]> AddUser(User user)
         {
             return _userRepository.AddUser(user);
         }
 
-        [HttpPut("PutUser")]
+        [HttpPut("{id}")]
         public Task<User[]> PutUser(User user, int id)
         {
             return _userRepository.PutUser(user, id);
         }
 
-        [HttpDelete("DeleteUser")]
+        [HttpDelete("{id}")]
         public Task<User[]> DeleteUser(int id)
         {
             return _userRepository.DeleteUser(id);
