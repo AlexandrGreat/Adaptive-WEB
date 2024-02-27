@@ -1,4 +1,4 @@
-﻿using LR6.Interfaces;
+using LR6.Interfaces;
 using LR6.Models;
 using LR6.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -18,31 +18,31 @@ namespace LR6.Controllers
             _reviewRepository = reviewRepository;
         }
 
-        [HttpGet("GetReviews")]
+        [HttpGet]
         public Task<Review[]> GetReviews()
         {
             return _reviewRepository.GetAllReviews();
         }
-
-        [HttpGet("GetReview")]
+        
+        [HttpGet("{id}")]
         public Task<Review> GetReview(int id)
         {
             return _reviewRepository.GetReview(id);
         }
 
-        [HttpPost("AddReview")]
+        [HttpPost]
         public Task<Review[]> AddReview(Review review)
         {
             return _reviewRepository.AddReview(review);
         }
 
-        [HttpPut("PutReview")]
+        [HttpPut("{id}")]
         public Task<Review[]> PutReview(Review review, int id)
         {
             return _reviewRepository.PutReview(review, id);
         }
 
-        [HttpDelete("DeleteReview")]
+        [HttpDelete("{id}")]
         public Task<Review[]> DeleteReview(int id)
         {
             return _reviewRepository.DeleteReview(id);
