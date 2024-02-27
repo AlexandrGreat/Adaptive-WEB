@@ -1,4 +1,4 @@
-﻿namespace LR5.Models
+namespace LR5.Models
 {
     public class ResponseModel
     {
@@ -10,5 +10,7 @@
         {
             return ("\nResponse: " + response + "\nStatus: " + status + "\nData: " + headers);
         }
+
+        public static List<string> APIDataStorage=new List<string>();
     }
 }
