@@ -1,4 +1,4 @@
-﻿using LR6.Interfaces;
+using LR6.Interfaces;
 using LR6.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -66,14 +66,19 @@ namespace LR6.Services
             var passwordCheck = _passwordService.Verify(currentUser.Password,login.Password);
 
             currentUser.LastLogin = DateOnly.FromDateTime(DateTime.Now);
-            currentUser.LoginAttempts += 1;
+            
             _userRepository.PutUser(currentUser, userIndex + 1);
 
-            if (currentUser != null&&passwordCheck)
+            if (currentUser != null && !passwordCheck)
+            {
+                currentUser.LoginAttempts += 1;
+            }
+
+            if (currentUser != null && passwordCheck)
             {
                 return currentUser;
             }
-
+            
             return null;
         }
 
@@ -90,7 +95,7 @@ namespace LR6.Services
             user.Password = passwordHash;
             user.Surname = newUser.Surname;
             user.BirthDate = newUser.BirthDate;
-            user.LoginAttempts = 1;
+            user.LoginAttempts = 0;
             user.LastLogin = DateOnly.FromDateTime(DateTime.Now);
             await _userRepository.AddUser(user);
             return await _userRepository.GetAllUsers();
