@@ -1,4 +1,4 @@
-﻿using LR6.Models;
+using LR6.Models;
 using LR6.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
