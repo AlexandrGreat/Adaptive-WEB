@@ -1,81 +1,132 @@
-using System;
+using LR6.Controllers;
+using LR6.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Text;
+using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using LR6.Extensions;
+using LR6.Health;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
 
-main();
+var builder = WebApplication.CreateBuilder(args);
+var config = builder.Configuration;
 
-void main() 
+// Add services to the container.
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
 {
-    Console.WriteLine("Please, select an action");
-    Console.WriteLine("-------------------");
-    Console.WriteLine("1: Count symbols in file");
-    Console.WriteLine("2: Do some math");
-    Console.WriteLine("-------------------");
-    ConsoleKeyInfo input;
-    input = Console.ReadKey(true);
-    if (input.Key == ConsoleKey.D1) { Console.Clear(); action1(); }
-    if (input.Key == ConsoleKey.D2) { Console.Clear(); action2(); }
-}
-
-void action1() 
-{
-    string a, text;
-    int a1;
-    Console.WriteLine("ACTION 1");
-    Console.WriteLine("-------------------");
-    string fileName = "action1text.txt";
-    Console.WriteLine("Input words count");
-    a = Console.ReadLine();
-    if (File.Exists(fileName) && int.TryParse(a, out a1))
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        text = File.ReadAllText(fileName);
-        int word = 1;
-        foreach (char c in text)
-        {
-            if (c == ' ') { word += 1; }
-            if (word <= a1) { Console.Write(c); }
+        In = ParameterLocation.Header,
+        Description = "Insert JWT Token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "bearer"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement {{
+    new OpenApiSecurityScheme{
+        Reference=new OpenApiReference{
+            Type=ReferenceType.SecurityScheme,
+            Id="Bearer"
         }
-        Console.WriteLine();
-    }
-    else
-        Console.WriteLine("Error");
-    Console.WriteLine("-------------------");
-    Console.WriteLine("Press any key to return to main menu");
-    Console.ReadKey();
-    Console.Clear();
-    main();
+    },
+        new string[]{ }}
+    });
+    c.OperationFilter<CustomHeaderFilter>();
+});
+
+builder.Services.AddHealthChecks()
+    .AddCheck<DBConHealthCheck>("DBConHealthCheck", tags: new[] { "runtime" })
+    .AddCheck<ConStringHealthCheck>("ConStringHealthCheck", tags: new[] { "input" });
+builder.Services.AddHealthChecksUI().AddInMemoryStorage();
+
+builder.Services.AddAuthentication(x => {
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme=JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultScheme=JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(x => {
+    x.TokenValidationParameters = new TokenValidationParameters {
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:Key"]!)),
+        ValidateIssuerSigningKey = true,
+        ValidateIssuer=true,
+        ValidateAudience=true,
+        ValidateLifetime=true,
+        ValidIssuer = config["JwtSettings:Issuer"],
+        ValidAudience = config["JwtSettings:Audience"]
+    };
+});
+builder.Services.AddAuthorization();
+
+builder.Services.AddSingleton<UserRepository>(); //Used AddSingleton to imitate work with DB: every request used the same object
+builder.Services.AddSingleton<ProductRepository>();
+builder.Services.AddSingleton<ReviewRepository>();
+builder.Services.AddSingleton<LoginService>();
+builder.Services.AddSingleton<PasswordService>();
+builder.Services.AddSingleton<LR9Service>();
+
+builder.Services.AddTransient<DatabaseService>();
+builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>,SwaggerConfigOptions>();
+
+builder.Services.AddControllers();
+
+builder.Services.AddApiVersioning(config =>
+{
+    config.DefaultApiVersion = new ApiVersion(1, 0);
+    config.AssumeDefaultVersionWhenUnspecified = true;
+    config.ApiVersionReader = new HeaderApiVersionReader("api-version");
+    config.ReportApiVersions = true;
+});
+builder.Services.AddVersionedApiExplorer();
+
+var app = builder.Build();
+
+var versionDescProvider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options => {
+        foreach (var desc in versionDescProvider.ApiVersionDescriptions)
+        {
+            options.SwaggerEndpoint($"/swagger/{desc.GroupName}/swagger.json", $"LR API - {desc.GroupName.ToUpper()}");
+        }
+    });
 }
 
-void action2() 
+app.UseHttpsRedirection();
+
+app.MapHealthChecks("/health", new HealthCheckOptions
 {
-    string a, b;
-    double a1, b1;
-    Console.WriteLine("ACTION 2");
-    Console.WriteLine("-------------------");
-    Console.WriteLine("Input 2 numbers:");
-    a = Console.ReadLine();
-    b = Console.ReadLine();
-    if (double.TryParse(a, out a1) && double.TryParse(b, out b1)) 
-    {
-        Console.WriteLine("Please, select an action");
-        Console.WriteLine("-------------------");
-        Console.WriteLine("1: +");
-        Console.WriteLine("2: -");
-        Console.WriteLine("3: *");
-        Console.WriteLine("4: /");
-        Console.WriteLine("-------------------");
-        ConsoleKeyInfo input;
-        input = Console.ReadKey(true);
-        if (input.Key == ConsoleKey.D1) { Console.WriteLine(a1 + " + " + b1 + " = " + (a1 + b1)); }
-        if (input.Key == ConsoleKey.D2) { Console.WriteLine(a1 + " - " + b1 + " = " + (a1 - b1)); }
-        if (input.Key == ConsoleKey.D3) { Console.WriteLine(a1 + " * " + b1 + " = " + (a1 * b1)); }
-        if (input.Key == ConsoleKey.D4) { Console.WriteLine(a1 + " / " + b1 + " = " + (a1 / b1)); }
-    }
-    else
-    {
-        Console.WriteLine("Cant parse to double");
-    }
-    Console.WriteLine("-------------------");
-    Console.WriteLine("Press any key to return to main menu");
-    Console.ReadKey();
-    Console.Clear();
-    main();
-}
+    //ResponseWriter = DBWriteResponse.WriteResponse,
+    ResponseWriter=UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+app.MapHealthChecks("/health/input", new HealthCheckOptions
+{
+    ResponseWriter = DBWriteResponse.WriteResponse,
+    Predicate = healthCheck => healthCheck.Tags.Contains("input")
+});
+
+app.MapHealthChecks("/health/runtime", new HealthCheckOptions
+{
+    ResponseWriter = DBWriteResponse.WriteResponse,
+    Predicate = healthCheck => healthCheck.Tags.Contains("runtime")
+});
+
+app.MapHealthChecksUI();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
